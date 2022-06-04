@@ -21,6 +21,8 @@
   int lab_num = -1;
   int arr_num = 0;
   int literal_list_count = 0;
+  int array_literals[100];
+  int array_literals_idx = 0;
 
 
   FILE *output;
@@ -135,14 +137,13 @@ variable
 	  {
         if(lookup_symbol($2, VAR|PAR|ARR) == NO_INDEX)
 		{
-			insert_symbol($2, ARR, $1, ++arr_num, $3);
+			insert_symbol($2, ARR, $1, ++var_num, $3);
 
 			for(int i=0; i < $3; i++)
 			{ 
                 char *n = malloc(10 * sizeof(char));
                 sprintf(n, "%s%d", $2, i);
-				insert_symbol(n, ARR_EL, $1, arr_num, i);
-               
+				insert_symbol(n, ARR_EL, $1, ++var_num, i);               
 			}
 		}
            
@@ -154,24 +155,34 @@ variable
 	{
         if(lookup_symbol($2, VAR|PAR|ARR) == NO_INDEX)
         {
-			insert_symbol($2, ARR, $1, ++arr_num, literal_list_count);
+			int idx = insert_symbol($2, ARR, $1, ++var_num, literal_list_count);
 			for(int i=0; i < literal_list_count; i++)
 			{
 				char *n = malloc(10 * sizeof(char));
                 sprintf(n, "%s%d", $2, i);
-				insert_symbol(n, ARR_EL, $1, arr_num, i);
+                print_symtab();
+				insert_symbol(n, ARR_EL, $1, ++var_num, i);
+                gen_mov_arr_el(array_literals[i], i, idx); 
 			}
 		}
         else 
            err("redefinition of '%s'", $2);
-        print_symtab();
+        
 		literal_list_count = 0;
     }
   ;
 
 literal_list
- : literal {literal_list_count += 1;}
- | literal_list _COMMA literal {literal_list_count += 1;}
+ : literal
+ {
+    array_literals[literal_list_count] = $1;
+    literal_list_count += 1;
+ }
+ | literal_list _COMMA literal
+ {
+    array_literals[literal_list_count] = $3;
+    literal_list_count += 1;
+ }
  ;  
 
 size
@@ -205,8 +216,10 @@ assignment_statement
         if(idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
         else
-          if(get_type(idx) != get_type($3))
+          if(get_type(idx) != get_type($3)){
             err("incompatible types in assignment");
+            }
+        
         gen_mov($3, idx);
       }
     
@@ -218,7 +231,8 @@ assignment_statement
         else
           if(get_type(idx) != get_type($4))
             err("incompatible types in assignment");
-        //gen_mov($3, idx); TODO: Ovde moras raditi sa offsetom
+        gen_mov_arr_el($4, $2, idx); 
+        print_symtab();
       }
   ;
   ;
@@ -256,12 +270,16 @@ exp
 
   | _ID size
       {
-        $$ = lookup_symbol($1, ARR);
-		if($2 >= get_atr2($$))
+        int head = lookup_symbol($1, ARR);
+		if($2 >= get_atr2(head))
 			err("'%s' index out of range", $1);
 		
-        if($$ == NO_INDEX)
+        if(head == NO_INDEX)
           err("'%s' undeclared", $1);
+
+        char *n = malloc(10 * sizeof(char));
+        sprintf(n, "%s%d", $1, $2);
+        $$ = lookup_symbol(n, ARR_EL);
       }
 
   | function_call

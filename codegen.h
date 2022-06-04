@@ -19,4 +19,9 @@ void gen_cmp(int operand1_index, int operand2_index);
 // generise MOV naredbu, parametri su indeksi operanada u TS-a 
 void gen_mov(int input_index, int output_index);
 
+// generise MOV naredbu za element niza
+void gen_mov_arr_el(int input_index, int offset, int output_index);
+
+void gen_sym_name_arr_el(int index, int offset);
+
 #endif

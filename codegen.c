@@ -38,7 +38,15 @@ void free_if_reg(int reg_index) {
 void gen_sym_name(int index) {
   if(index > -1) {
     if(get_kind(index) == VAR) // -n*4(%14)
+     {
       code("-%d(%%14)", get_atr1(index) * 4);
+    }
+    else 
+        if(get_kind(index) == ARR_EL)
+    {
+      code("-%d(%%14)", get_atr1(index) * 4);
+    }
+
     else 
       if(get_kind(index) == PAR) // m*4(%14)
         code("%d(%%14)", 4 + get_atr1(index) *4);
@@ -74,5 +82,37 @@ void gen_mov(int input_index, int output_index) {
   if(output_index >= 0 && output_index <= LAST_WORKING_REG)
     set_type(output_index, get_type(input_index));
   free_if_reg(input_index);
+}
+
+void gen_mov_arr_el(int input_index, int offset, int output_index) {
+  code("\n\t\tMOV \t");
+  gen_sym_name_arr_el(input_index, offset);
+  code(",");
+  gen_sym_name_arr_el(output_index, offset);
+
+  //ako se smešta u registar, treba preneti tip 
+  if(output_index >= 0 && output_index <= LAST_WORKING_REG)
+    set_type(output_index, get_type(input_index));
+  free_if_reg(input_index);
+}
+
+void gen_sym_name_arr_el(int index, int offset) {
+  if(index > -1) {
+    if(get_kind(index) == ARR) // -n*4(%14)
+        {
+    code("-%d(%%14)", get_atr1(index) * 4 + (offset + 1) * 4);
+}
+    else 
+      if(get_kind(index) == PAR) // m*4(%14)
+        code("%d(%%14)", 4 + get_atr1(index) *4);
+      else
+        if(get_kind(index) == LIT)
+          code("$%s", get_name(index));
+        else //function, reg
+            {
+    code("%s", get_name(index));
+    }
+          
+  }
 }
 
