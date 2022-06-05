@@ -3,10 +3,12 @@
 int main() {
     int a;
     int x;
-    int b = {1, 2, 188};
+    //int b = {1, 2, 188};
+    stack::int s[3];
+    s.push(6);
+    x = s.pop();
     
-    a = b[2] + b[0];
-    x = a;
+
     
     
     return a;

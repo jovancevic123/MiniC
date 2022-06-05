@@ -25,6 +25,11 @@
 ","					 { return _COMMA; }
 "["                  { return _LSQBRACKET; }
 "]"                  { return _RSQBRACKET; }
+"pop"				 { return _POP; }
+"push"				 { return _PUSH; }
+"stack"				 { return _STACK; }
+"."					 { return _DOT; }
+"::"				 { return _DOUBLE_COLON; }	
 
 "+"                  { yylval.i = ADD; return _AROP; }
 "-"                  { yylval.i = SUB; return _AROP; }

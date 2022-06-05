@@ -49,6 +49,11 @@
 %token _COMMA
 %token _ASSIGN
 %token _SEMICOLON
+%token _DOT
+%token _DOUBLE_COLON
+%token _STACK
+%token _POP
+%token _PUSH
 %token <i> _AROP
 %token <i> _RELOP
 
@@ -170,6 +175,14 @@ variable
         
 		literal_list_count = 0;
     }
+  | _STACK _DOUBLE_COLON _TYPE _ID size _SEMICOLON
+  {
+		if(lookup_symbol($4, VAR|PAR|ARR) == NO_INDEX)
+			insert_symbol($4, STACK, $3, 0, $5);
+		else 
+			err("redefinition of '%s'", $4);
+        print_symtab();
+  }
   ;
 
 literal_list
@@ -234,7 +247,23 @@ assignment_statement
         gen_mov_arr_el($4, $2, idx); 
         print_symtab();
       }
-  ;
+  | _ID _DOT _PUSH _LPAREN num_exp _RPAREN _SEMICOLON
+    {
+		int idx = lookup_symbol($1, STACK);
+        if(idx == NO_INDEX)
+          err("invalid lvalue '%s' in assignment", $1);
+		else
+		  if(get_type(idx) != get_type($5))
+			err("incompatible types in assignment");
+		  else{
+                int count_elements = get_atr1(idx);
+		        count_elements++;
+		        if(count_elements >= get_atr2(idx))
+			        err("exceeded maximum number of elements in stack");
+		        else
+			        set_atr1(idx, count_elements);
+        }
+  }
   ;
 
 num_exp
@@ -281,7 +310,12 @@ exp
         sprintf(n, "%s%d", $1, $2);
         $$ = lookup_symbol(n, ARR_EL);
       }
-
+  | _ID _DOT _POP _LPAREN _RPAREN
+  {
+	    $$ = lookup_symbol($1, STACK);
+        if($$ == NO_INDEX) 
+          err("'%s' undeclared", $1);
+  }
   | function_call
       {
         $$ = take_reg();

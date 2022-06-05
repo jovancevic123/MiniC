@@ -2,7 +2,6 @@
 int main() {
     int a;
     int b[3];
-
-    a = b[2];
+    stack::int a[3]
        
 }
