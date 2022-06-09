@@ -42,12 +42,6 @@ void gen_sym_name(int index) {
       code("-%d(%%14)", get_atr1(index) * 4);
     }
     else 
-        if(get_kind(index) == ARR_EL)
-    {
-      code("-%d(%%14)", get_atr1(index) * 4);
-    }
-
-    else 
       if(get_kind(index) == PAR) // m*4(%14)
         code("%d(%%14)", 4 + get_atr1(index) *4);
       else
@@ -84,6 +78,25 @@ void gen_mov(int input_index, int output_index) {
   free_if_reg(input_index);
 }
 
+void gen_mov_from_arr_el(int input_index, int output_index, int offset) {
+//printf("\ninput: %d" , input_index);
+//printf("\noutput: %d" , output_index);
+//printf("\noffset: %d" , offset);
+  code("\n\t\tMOV \t");
+  if(get_kind(input_index) == ARR){
+    gen_sym_name_arr_el(input_index, offset);
+  }else{
+    gen_sym_name(input_index);
+  }
+  code(",");
+  gen_sym_name(output_index);
+
+  //ako se smešta u registar, treba preneti tip 
+  if(output_index >= 0 && output_index <= LAST_WORKING_REG)
+    set_type(output_index, get_type(input_index));
+  free_if_reg(input_index);
+}
+
 void gen_mov_arr_el(int input_index, int offset, int output_index) {
   code("\n\t\tMOV \t");
   gen_sym_name_arr_el(input_index, offset);
@@ -97,6 +110,9 @@ void gen_mov_arr_el(int input_index, int offset, int output_index) {
 }
 
 void gen_sym_name_arr_el(int index, int offset) {
+    printf("\ninput: %d" , index);
+//printf("\noutput: %d" , output_index);
+printf("\noffset: %d" , offset);
   if(index > -1) {
     if(get_kind(index) == ARR) // -n*4(%14)
         {

@@ -30,6 +30,7 @@
 "stack"				 { return _STACK; }
 "."					 { return _DOT; }
 "::"				 { return _DOUBLE_COLON; }	
+"*"				 { return _POINTER; }	
 
 "+"                  { yylval.i = ADD; return _AROP; }
 "-"                  { yylval.i = SUB; return _AROP; }

@@ -24,4 +24,6 @@ void gen_mov_arr_el(int input_index, int offset, int output_index);
 
 void gen_sym_name_arr_el(int index, int offset);
 
+void gen_mov_from_arr_el(int input_index, int output_index, int offset);
+
 #endif

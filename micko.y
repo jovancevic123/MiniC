@@ -24,14 +24,17 @@
   int array_literals[100];
   int array_literals_idx = 0;
 
-
+  int multiplier = -1;
   FILE *output;
 %}
 
 %union {
   int i;
   char *s;
+  struct num_exp_vals *vals;
 }
+
+ 
 
 %token <i> _TYPE
 %token _IF
@@ -55,9 +58,11 @@
 %token _POP
 %token _PUSH
 %token <i> _AROP
+%token _POINTER;
 %token <i> _RELOP
 
-%type <i> num_exp exp literal
+%type <vals> num_exp exp
+%type <i> literal
 %type <i> function_call argument rel_exp if_part size
 
 %nonassoc ONLY_IF
@@ -113,6 +118,13 @@ parameter
         set_atr1(fun_idx, 1);
         set_atr2(fun_idx, $1);
       }
+  | _TYPE _POINTER _ID 
+        {
+        int idx = lookup_symbol($3, ARR);
+        insert_symbol($3, ARR_PAR, $1, get_atr2(idx), NO_ATR);
+        set_atr1(fun_idx, 1);
+        set_atr2(fun_idx, $1);
+      }
   ;
 
 body
@@ -143,30 +155,20 @@ variable
         if(lookup_symbol($2, VAR|PAR|ARR) == NO_INDEX)
 		{
 			insert_symbol($2, ARR, $1, ++var_num, $3);
-
-			for(int i=0; i < $3; i++)
-			{ 
-                char *n = malloc(10 * sizeof(char));
-                sprintf(n, "%s%d", $2, i);
-				insert_symbol(n, ARR_EL, $1, ++var_num, i);               
-			}
+            code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * $3);
 		}
            
         else 
            err("redefinition of '%s'", $2);
-        print_symtab();
       }
   | _TYPE _ID _ASSIGN _LBRACKET literal_list _RBRACKET _SEMICOLON
 	{
         if(lookup_symbol($2, VAR|PAR|ARR) == NO_INDEX)
         {
 			int idx = insert_symbol($2, ARR, $1, ++var_num, literal_list_count);
+            code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * literal_list_count);
 			for(int i=0; i < literal_list_count; i++)
 			{
-				char *n = malloc(10 * sizeof(char));
-                sprintf(n, "%s%d", $2, i);
-                print_symtab();
-				insert_symbol(n, ARR_EL, $1, ++var_num, i);
                 gen_mov_arr_el(array_literals[i], i, idx); 
 			}
 		}
@@ -229,11 +231,16 @@ assignment_statement
         if(idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
         else
-          if(get_type(idx) != get_type($3)){
+          if(get_type(idx) != get_type($3->first)){
             err("incompatible types in assignment");
             }
-        
-        gen_mov($3, idx);
+
+        if(get_kind($3->first) != ARR){
+            gen_mov($3->first, idx);
+        }
+        else{
+            gen_mov_from_arr_el($3->first, idx, $3->second);        
+        }
       }
     
   | _ID size _ASSIGN num_exp _SEMICOLON
@@ -242,9 +249,9 @@ assignment_statement
         if(idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
         else
-          if(get_type(idx) != get_type($4))
+          if(get_type(idx) != get_type($4->first))
             err("incompatible types in assignment");
-        gen_mov_arr_el($4, $2, idx); 
+        gen_mov_arr_el($4->first, $2, idx); 
         print_symtab();
       }
   | _ID _DOT _PUSH _LPAREN num_exp _RPAREN _SEMICOLON
@@ -253,7 +260,7 @@ assignment_statement
         if(idx == NO_INDEX)
           err("invalid lvalue '%s' in assignment", $1);
 		else
-		  if(get_type(idx) != get_type($5))
+		  if(get_type(idx) != get_type($5->first))
 			err("incompatible types in assignment");
 		  else{
                 int count_elements = get_atr1(idx);
@@ -271,31 +278,37 @@ num_exp
 
   | num_exp _AROP exp
       {
-        if(get_type($1) != get_type($3))
+        print_symtab();
+        if(get_type((*$1).first) != get_type((*$3).first))
           err("invalid operands: arithmetic operation");
-        int t1 = get_type($1);    
+        int t1 = get_type($1->first);    
+        printf("\nPRVA: %d", $1->second);
+        printf("\nDRUGA: %d", $3->second);
         code("\n\t\t%s\t", ar_instructions[$2 + (t1 - 1) * AROP_NUMBER]);
-        gen_sym_name($1);
+        
+        if(get_kind($1->first) == ARR){
+            gen_sym_name_arr_el($1->first, $1->second);
+        }else{
+            gen_sym_name($1->first);   
+        }
         code(",");
-        gen_sym_name($3);
+        if(get_kind($3->first) == ARR){
+            gen_sym_name_arr_el($3->first, $3->second);
+        }else{
+            gen_sym_name($3->first);
+        }
         code(",");
-        free_if_reg($3);
-        free_if_reg($1);
-        $$ = take_reg();
-        gen_sym_name($$);
-        set_type($$, t1);
+        free_if_reg($3->first);
+        free_if_reg($1->first);
+        struct num_exp_vals vrati; vrati.first = take_reg(); vrati.second=-1; $$ = &vrati;
+        //$$ = take_reg();
+        gen_sym_name($$->first);
+        set_type($$->first, t1);
       }
   ;
 
 exp
-  : literal
-
-  | _ID
-      {
-        $$ = lookup_symbol($1, VAR|PAR);
-        if($$ == NO_INDEX)
-          err("'%s' undeclared", $1);
-      }
+  : literal {struct num_exp_vals vrati; vrati.first = $1; vrati.second=-1; $$ = &vrati;}
 
   | _ID size
       {
@@ -306,24 +319,35 @@ exp
         if(head == NO_INDEX)
           err("'%s' undeclared", $1);
 
-        char *n = malloc(10 * sizeof(char));
-        sprintf(n, "%s%d", $1, $2);
-        $$ = lookup_symbol(n, ARR_EL);
+        struct num_exp_vals vrati;
+        vrati.first = head; 
+        vrati.second= $2; 
+        $$ = &vrati;
       }
+  | _ID
+      {
+        int idx = lookup_symbol($1, VAR|PAR);
+        if(idx == NO_INDEX)
+          err("'%s' undeclared", $1);
+        struct num_exp_vals vrati; vrati.first = idx; vrati.second=-1; $$ = &vrati;
+      }
+
   | _ID _DOT _POP _LPAREN _RPAREN
   {
-	    $$ = lookup_symbol($1, STACK);
-        if($$ == NO_INDEX) 
+	    int idx = lookup_symbol($1, STACK);
+        if(idx == NO_INDEX) 
           err("'%s' undeclared", $1);
+        struct num_exp_vals vrati; vrati.first = idx; vrati.second=-1; $$ = &vrati;
   }
   | function_call
       {
-        $$ = take_reg();
-        gen_mov(FUN_REG, $$);
+        int idx = take_reg();
+        gen_mov(FUN_REG, idx);
+        struct num_exp_vals vrati; vrati.first = idx; vrati.second=-1; $$ = &vrati;
       }
   
   | _LPAREN num_exp _RPAREN
-      { $$ = $2; }
+      { struct num_exp_vals vrati; vrati.first = $2->first; vrati.second=-1; $$ = &vrati; }
   ;
 
 literal
@@ -359,11 +383,11 @@ argument
 
   | num_exp
     { 
-      if(get_atr2(fcall_idx) != get_type($1))
+      if(get_atr2(fcall_idx) != get_type($1->first))
         err("incompatible type for argument");
-      free_if_reg($1);
+      free_if_reg($1->first);
       code("\n\t\t\tPUSH\t");
-      gen_sym_name($1);
+      gen_sym_name($1->first);
       $$ = 1;
     }
   ;
@@ -398,19 +422,25 @@ if_part
 rel_exp
   : num_exp _RELOP num_exp
       {
-        if(get_type($1) != get_type($3))
+        if(get_type($1->first) != get_type($3->first))
           err("invalid operands: relational operator");
-        $$ = $2 + ((get_type($1) - 1) * RELOP_NUMBER);
-        gen_cmp($1, $3);
+        $$ = $2 + ((get_type($1->first) - 1) * RELOP_NUMBER);
+        gen_cmp($1->first, $3->first);
       }
   ;
 
 return_statement
   : _RETURN num_exp _SEMICOLON
       {
-        if(get_type(fun_idx) != get_type($2))
+        if(get_type(fun_idx) != get_type($2->first))
           err("incompatible types in return");
-        gen_mov($2, FUN_REG);
+
+        if(get_kind($2->first) != ARR){
+             gen_mov($2->first, FUN_REG);
+        }
+        else{
+            gen_mov_from_arr_el($2->first, FUN_REG, $2->second);        
+        }
         code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));        
       }
   ;

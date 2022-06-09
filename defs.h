@@ -25,9 +25,14 @@ extern int yyerror(char *s);
 //tipovi podataka
 enum types { NO_TYPE, INT, UINT };
 
+typedef struct num_exp_vals {
+   int first;
+   int second;
+} num_exp_vals; 
+
 //vrste simbola (moze ih biti maksimalno 32)
 enum kinds { NO_KIND = 0x1, REG = 0x2, LIT = 0x4, 
-             FUN = 0x8, VAR = 0x10, PAR = 0x20, ARR = 0x40, ARR_EL = 0x80, STACK = 0x100 };
+             FUN = 0x8, VAR = 0x10, PAR = 0x20, ARR = 0x40, ARR_PAR = 0x80, STACK = 0x100 };
 
 //konstante arithmetickih operatora
 enum arops { ADD, SUB, MUL, DIV, AROP_NUMBER };
