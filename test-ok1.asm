@@ -1,4 +1,15 @@
 
+func:
+		PUSH	%14
+		MOV 	%15,%14
+		SUBS	%15,$4,%15
+@func_body:
+		MOV 	8(%14),%13
+		JMP 	@func_exit
+@func_exit:
+		MOV 	%14,%15
+		POP 	%14
+		RET
 main:
 		PUSH	%14
 		MOV 	%15,%14

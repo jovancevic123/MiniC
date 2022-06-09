@@ -1,9 +1,9 @@
 //OPIS: switch sa break i default
 //RETURN: 10
 
-int func(int *b){
-    int a;
-    a = 5;
+int* func(int* joc){
+    int a[5];
+    
     return a;
 }
 

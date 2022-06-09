@@ -23,7 +23,7 @@ extern int yyerror(char *s);
           if (++out_lin > 2000) err("Too many output lines"), exit(1); })
 
 //tipovi podataka
-enum types { NO_TYPE, INT, UINT };
+enum types { NO_TYPE, INT, UINT, INT_PTR, UINT_PTR };
 
 typedef struct num_exp_vals {
    int first;

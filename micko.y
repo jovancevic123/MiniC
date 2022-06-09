@@ -118,13 +118,13 @@ parameter
         set_atr1(fun_idx, 1);
         set_atr2(fun_idx, $1);
       }
-  | _TYPE _POINTER _ID 
-        {
-        int idx = lookup_symbol($3, ARR);
-        insert_symbol($3, ARR_PAR, $1, get_atr2(idx), NO_ATR);
-        set_atr1(fun_idx, 1);
-        set_atr2(fun_idx, $1);
-      }
+//  | _TYPE _POINTER _ID 
+//        {
+//        int idx = lookup_symbol($3, ARR);
+//        insert_symbol($3, ARR_PAR, $1, get_atr2(idx), NO_ATR);
+//        set_atr1(fun_idx, 1);
+//        set_atr2(fun_idx, $1);
+//      }
   ;
 
 body
@@ -434,6 +434,8 @@ return_statement
       {
         if(get_type(fun_idx) != get_type($2->first))
           err("incompatible types in return");
+        else
+            err("incompatible types in return");
 
         if(get_kind($2->first) != ARR){
              gen_mov($2->first, FUN_REG);
@@ -443,6 +445,16 @@ return_statement
         }
         code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));        
       }
+//  | _RETURN _ID _SEMICOLON
+//    {
+//        if(get_kind($2) == ARR)
+//        {
+//             if(get_type(fun_idx) == INT_PTR && get_type($2) != INT)
+//                err("incompatible types in return");
+//             else if(get_type(fun_idx) == UINT_PTR && get_type($2) != UINT)
+//                err("incompatible types in return");
+//        }
+//    }
   ;
 
 %%
