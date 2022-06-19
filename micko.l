@@ -10,11 +10,12 @@
 
 [ \t\n]+             { /* skip */ }
 
+"int*"                { yylval.i = INT_PTR;  return _TYPE; }
+"unsigned*"           { yylval.i = UINT_PTR; return _TYPE; }
+
 "int"                { yylval.i = INT;  return _TYPE; }
 "unsigned"           { yylval.i = UINT; return _TYPE; }
 
-"int*"                { yylval.i = INT_PTR;  return _TYPE; }
-"unsigned*"           { yylval.i = UINT_PTR; return _TYPE; }
 "if"                 { return _IF; }
 "else"               { return _ELSE; }
 "return"             { return _RETURN; }

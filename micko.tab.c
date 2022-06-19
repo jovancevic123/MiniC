@@ -68,33 +68,33 @@
 /* First part of user prologue.  */
 #line 1 "micko.y"
 
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include "defs.h"
-  #include "symtab.h"
-  #include "codegen.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "defs.h"
+#include "symtab.h"
+#include "codegen.h"
 
-  int yyparse(void);
-  int yylex(void);
-  int yyerror(char *s);
-  void warning(char *s);
+    int yyparse(void);
+    int yylex(void);
+    int yyerror(char *s);
+    void warning(char *s);
 
-  extern int yylineno;
-  int out_lin = 0;
-  char char_buffer[CHAR_BUFFER_LENGTH];
-  int error_count = 0;
-  int warning_count = 0;
-  int var_num = 0;
-  int fun_idx = -1;
-  int fcall_idx = -1;
-  int lab_num = -1;
-  int arr_num = 0;
-  int literal_list_count = 0;
-  int array_literals[100];
-  int array_literals_idx = 0;
+    extern int yylineno;
+    int out_lin = 0;
+    char char_buffer[CHAR_BUFFER_LENGTH];
+    int error_count = 0;
+    int warning_count = 0;
+    int var_num = 0;
+    int fun_idx = -1;
+    int fcall_idx = -1;
+    int lab_num = -1;
+    int arr_num = 0;
+    int literal_list_count = 0;
+    int array_literals[100];
+    int array_literals_idx = 0;
 
-  int multiplier = -1;
-  FILE *output;
+    int multiplier = -1;
+    FILE *output;
 
 #line 100 "micko.tab.c"
 
@@ -560,12 +560,12 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    74,    74,    82,    83,    88,    87,   113,   115,   132,
-     131,   141,   142,   146,   153,   164,   180,   191,   196,   204,
-     207,   212,   213,   217,   218,   219,   220,   224,   228,   246,
-     257,   277,   279,   311,   313,   327,   335,   342,   349,   354,
-     357,   363,   362,   382,   384,   396,   399,   405,   410,   404,
-     423,   433
+       0,    74,    74,    81,    82,    86,    85,   110,   114,   140,
+     139,   148,   150,   153,   160,   171,   197,   207,   212,   219,
+     224,   230,   232,   235,   236,   236,   236,   239,   242,   268,
+     286,   305,   308,   335,   343,   360,   372,   383,   403,   412,
+     417,   424,   423,   442,   446,   457,   462,   469,   474,   468,
+     486,   495
 };
 #endif
 
@@ -1427,436 +1427,540 @@ yyreduce:
     {
   case 2:
 #line 75 "micko.y"
-      {  
-        if(lookup_symbol("main", FUN) == NO_INDEX)
-          err("undefined reference to 'main'");
-      }
+{
+    if (lookup_symbol("main", FUN) == NO_INDEX)
+        err("undefined reference to 'main'");
+}
 #line 1435 "micko.tab.c"
     break;
 
   case 5:
-#line 88 "micko.y"
-      {
-        fun_idx = lookup_symbol((yyvsp[0].s), FUN);
-        if(fun_idx == NO_INDEX)
-          fun_idx = insert_symbol((yyvsp[0].s), FUN, (yyvsp[-1].i), NO_ATR, NO_ATR);
-        else 
-          err("redefinition of function '%s'", (yyvsp[0].s));
+#line 86 "micko.y"
+{
+    fun_idx = lookup_symbol((yyvsp[0].s), FUN);
+    if (fun_idx == NO_INDEX)
+        fun_idx = insert_symbol((yyvsp[0].s), FUN, (yyvsp[-1].i), NO_ATR, NO_ATR);
+    else
+        err("redefinition of function '%s'", (yyvsp[0].s));
 
-        code("\n%s:", (yyvsp[0].s));
-        code("\n\t\tPUSH\t%%14");
-        code("\n\t\tMOV \t%%15,%%14");
-      }
+    code("\n%s:", (yyvsp[0].s));
+    code("\n\t\tPUSH\t%%14");
+    code("\n\t\tMOV \t%%15,%%14");
+}
 #line 1451 "micko.tab.c"
     break;
 
   case 6:
-#line 100 "micko.y"
-      {
-        clear_symbols(fun_idx + 1);
-        var_num = 0;
-        
-        code("\n@%s_exit:", (yyvsp[-5].s));
-        code("\n\t\tMOV \t%%14,%%15");
-        code("\n\t\tPOP \t%%14");
-        code("\n\t\tRET");
-      }
+#line 98 "micko.y"
+{
+    clear_symbols(fun_idx + 1);
+    var_num = 0;
+
+    code("\n@%s_exit:", (yyvsp[-5].s));
+    code("\n\t\tMOV \t%%14,%%15");
+    code("\n\t\tPOP \t%%14");
+    code("\n\t\tRET");
+}
 #line 1465 "micko.tab.c"
     break;
 
   case 7:
-#line 113 "micko.y"
-      { set_atr1(fun_idx, 0); }
-#line 1471 "micko.tab.c"
+#line 110 "micko.y"
+{
+    set_atr1(fun_idx, 0);
+}
+#line 1473 "micko.tab.c"
     break;
 
   case 8:
-#line 116 "micko.y"
-      {
+#line 115 "micko.y"
+{
+    if ((yyvsp[-1].i) == INT_PTR)
+    {
+        insert_symbol((yyvsp[0].s), ARR_PAR, INT, 1, NO_ATR);
+        set_atr1(fun_idx, 1);
+        set_atr2(fun_idx, INT);
+    }
+    else if ((yyvsp[-1].i) == UINT_PTR)
+    {
+        insert_symbol((yyvsp[0].s), ARR_PAR, UINT, 1, NO_ATR);
+        set_atr1(fun_idx, 1);
+        set_atr2(fun_idx, UINT);
+    }
+    else
+    {
         insert_symbol((yyvsp[0].s), PAR, (yyvsp[-1].i), 1, NO_ATR);
         set_atr1(fun_idx, 1);
         set_atr2(fun_idx, (yyvsp[-1].i));
-      }
-#line 1481 "micko.tab.c"
+    }
+
+}
+#line 1499 "micko.tab.c"
     break;
 
   case 9:
-#line 132 "micko.y"
-      {
-        if(var_num)
-          code("\n\t\tSUBS\t%%15,$%d,%%15", 4*var_num);
-        code("\n@%s_body:", get_name(fun_idx));
-      }
-#line 1491 "micko.tab.c"
+#line 140 "micko.y"
+{
+    if (var_num)
+        code("\n\t\tSUBS\t%%15,$%d,%%15", 4 * var_num);
+    code("\n@%s_body:", get_name(fun_idx));
+}
+#line 1509 "micko.tab.c"
     break;
 
   case 13:
-#line 147 "micko.y"
-      {
-        if(lookup_symbol((yyvsp[-1].s), VAR|PAR|ARR) == NO_INDEX)
-           insert_symbol((yyvsp[-1].s), VAR, (yyvsp[-2].i), ++var_num, NO_ATR);
-        else 
-           err("redefinition of '%s'", (yyvsp[-1].s));
-      }
-#line 1502 "micko.tab.c"
+#line 154 "micko.y"
+{
+    if (lookup_symbol((yyvsp[-1].s), VAR | PAR | ARR) == NO_INDEX)
+        insert_symbol((yyvsp[-1].s), VAR, (yyvsp[-2].i), ++var_num, NO_ATR);
+    else
+        err("redefinition of '%s'", (yyvsp[-1].s));
+}
+#line 1520 "micko.tab.c"
     break;
 
   case 14:
-#line 154 "micko.y"
-          {
-        if(lookup_symbol((yyvsp[-2].s), VAR|PAR|ARR) == NO_INDEX)
-		{
-			insert_symbol((yyvsp[-2].s), ARR, (yyvsp[-3].i), ++var_num, (yyvsp[-1].i));
-            code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * (yyvsp[-1].i));
-		}
-           
-        else 
-           err("redefinition of '%s'", (yyvsp[-2].s));
-      }
-#line 1517 "micko.tab.c"
+#line 161 "micko.y"
+{
+    if (lookup_symbol((yyvsp[-2].s), VAR | PAR | ARR) == NO_INDEX)
+    {
+        insert_symbol((yyvsp[-2].s), ARR, (yyvsp[-3].i), ++var_num, (yyvsp[-1].i));
+        code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * (yyvsp[-1].i));
+    }
+
+    else
+        err("redefinition of '%s'", (yyvsp[-2].s));
+}
+#line 1535 "micko.tab.c"
     break;
 
   case 15:
-#line 165 "micko.y"
+#line 172 "micko.y"
+{
+    if (lookup_symbol((yyvsp[-5].s), VAR | PAR | ARR) == NO_INDEX)
+    {
+        int idx = insert_symbol((yyvsp[-5].s), ARR, (yyvsp[-6].i), ++var_num, literal_list_count);
+        code("\n\t\t\tSUBS\t %%15,$%d,%%15", 4 * literal_list_count);
+        for (int i = 0; i < literal_list_count; i++)
         {
-        if(lookup_symbol((yyvsp[-5].s), VAR|PAR|ARR) == NO_INDEX)
-        {
-			int idx = insert_symbol((yyvsp[-5].s), ARR, (yyvsp[-6].i), ++var_num, literal_list_count);
-            code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * literal_list_count);
-			for(int i=0; i < literal_list_count; i++)
-			{
-                gen_mov_arr_el(array_literals[i], i, idx); 
-			}
-		}
-        else 
-           err("redefinition of '%s'", (yyvsp[-5].s));
-        
-		literal_list_count = 0;
+			struct num_exp_vals lit;
+			lit.first = array_literals[i];
+			lit.second = -1;
+
+            //printf("\n\tDeklaracija niza: %d", lit.first);
+			
+			struct num_exp_vals id;
+			id.first = idx;
+			id.second = i;
+           
+            gen_mov(&lit, &id);
+        }
     }
-#line 1537 "micko.tab.c"
+    else
+        err("redefinition of '%s'", (yyvsp[-5].s));
+
+    literal_list_count = 0;
+}
+#line 1565 "micko.tab.c"
     break;
 
   case 16:
-#line 181 "micko.y"
-  {
-		if(lookup_symbol((yyvsp[-2].s), VAR|PAR|ARR) == NO_INDEX)
-			insert_symbol((yyvsp[-2].s), STACK, (yyvsp[-3].i), 0, (yyvsp[-1].i));
-		else 
-			err("redefinition of '%s'", (yyvsp[-2].s));
-        print_symtab();
-  }
-#line 1549 "micko.tab.c"
+#line 198 "micko.y"
+{
+    if (lookup_symbol((yyvsp[-2].s), VAR | PAR | ARR) == NO_INDEX)
+        insert_symbol((yyvsp[-2].s), STACK, (yyvsp[-3].i), 0, (yyvsp[-1].i));
+    else
+        err("redefinition of '%s'", (yyvsp[-2].s));
+    print_symtab();
+}
+#line 1577 "micko.tab.c"
     break;
 
   case 17:
-#line 192 "micko.y"
- {
+#line 208 "micko.y"
+{
     array_literals[literal_list_count] = (yyvsp[0].i);
     literal_list_count += 1;
- }
-#line 1558 "micko.tab.c"
+}
+#line 1586 "micko.tab.c"
     break;
 
   case 18:
-#line 197 "micko.y"
- {
+#line 213 "micko.y"
+{
     array_literals[literal_list_count] = (yyvsp[0].i);
     literal_list_count += 1;
- }
-#line 1567 "micko.tab.c"
+}
+#line 1595 "micko.tab.c"
     break;
 
   case 19:
-#line 205 "micko.y"
-      { (yyval.i) = strtol((yyvsp[-1].s), NULL, 10); }
-#line 1573 "micko.tab.c"
+#line 220 "micko.y"
+{
+    (yyval.i) = strtol((yyvsp[-1].s), NULL, 10);
+}
+#line 1603 "micko.tab.c"
     break;
 
   case 20:
-#line 208 "micko.y"
-      { (yyval.i) = strtol((yyvsp[-1].s), NULL, 10); }
-#line 1579 "micko.tab.c"
+#line 225 "micko.y"
+{
+    (yyval.i) = strtol((yyvsp[-1].s), NULL, 10);
+}
+#line 1611 "micko.tab.c"
     break;
 
   case 28:
-#line 229 "micko.y"
-      {
-        int idx = lookup_symbol((yyvsp[-3].s), VAR|PAR);
-        if(idx == NO_INDEX)
-          err("invalid lvalue '%s' in assignment", (yyvsp[-3].s));
-        else
-          if(get_type(idx) != get_type((yyvsp[-1].vals)->first)){
-            err("incompatible types in assignment");
-            }
+#line 243 "micko.y"
+{
+    int idx = lookup_symbol((yyvsp[-3].s), VAR | PAR);
+    if (idx == NO_INDEX)
+        err("invalid lvalue '%s' in assignment", (yyvsp[-3].s));
+    else if (get_type(idx) != get_type((yyvsp[-1].vals)->first))
+    {
+        err("incompatible types in assignment");
+    }
 
-        if(get_kind((yyvsp[-1].vals)->first) != ARR){
-            gen_mov((yyvsp[-1].vals)->first, idx);
-        }
-        else{
-            gen_mov_from_arr_el((yyvsp[-1].vals)->first, idx, (yyvsp[-1].vals)->second);        
-        }
-      }
-#line 1600 "micko.tab.c"
+    if (get_kind((yyvsp[-1].vals)->first) != ARR)
+    {
+        struct num_exp_vals vrati;
+        vrati.first = idx;
+        vrati.second = -1;
+        gen_mov((yyvsp[-1].vals), &vrati);
+    }
+    else
+    {
+		struct num_exp_vals id;
+		id.first = idx;
+		id.second = -1;
+        gen_mov((yyvsp[-1].vals), &id);
+    }
+}
+#line 1640 "micko.tab.c"
     break;
 
   case 29:
-#line 247 "micko.y"
-      {
-        int idx = lookup_symbol((yyvsp[-4].s), ARR);
-        if(idx == NO_INDEX)
-          err("invalid lvalue '%s' in assignment", (yyvsp[-4].s));
-        else
-          if(get_type(idx) != get_type((yyvsp[-1].vals)->first))
+#line 269 "micko.y"
+{
+    int idx = lookup_symbol((yyvsp[-4].s), ARR | ARR_PAR);
+    if (get_kind(idx) != ARR_PAR)
+    {
+        if (idx == NO_INDEX)
+            err("invalid lvalue '%s' in assignment", (yyvsp[-4].s));
+        else if (get_type(idx) != get_type((yyvsp[-1].vals)->first))
             err("incompatible types in assignment");
-        gen_mov_arr_el((yyvsp[-1].vals)->first, (yyvsp[-3].i), idx); 
+		
+		struct num_exp_vals id;
+		id.first = idx;
+		id.second = (yyvsp[-3].i);
+        printf("Ranije %d", (yyvsp[-1].vals)->first);
+        gen_mov((yyvsp[-1].vals), &id);
         print_symtab();
-      }
-#line 1615 "micko.tab.c"
+    }
+}
+#line 1662 "micko.tab.c"
     break;
 
   case 30:
-#line 258 "micko.y"
+#line 287 "micko.y"
+{
+    int idx = lookup_symbol((yyvsp[-6].s), STACK);
+    if (idx == NO_INDEX)
+        err("invalid lvalue '%s' in assignment", (yyvsp[-6].s));
+    else if (get_type(idx) != get_type((yyvsp[-2].vals)->first))
+        err("incompatible types in assignment");
+    else
     {
-		int idx = lookup_symbol((yyvsp[-6].s), STACK);
-        if(idx == NO_INDEX)
-          err("invalid lvalue '%s' in assignment", (yyvsp[-6].s));
-		else
-		  if(get_type(idx) != get_type((yyvsp[-2].vals)->first))
-			err("incompatible types in assignment");
-		  else{
-                int count_elements = get_atr1(idx);
-		        count_elements++;
-		        if(count_elements >= get_atr2(idx))
-			        err("exceeded maximum number of elements in stack");
-		        else
-			        set_atr1(idx, count_elements);
-        }
-  }
-#line 1636 "micko.tab.c"
+        int count_elements = get_atr1(idx);
+        count_elements++;
+        if (count_elements >= get_atr2(idx))
+            err("exceeded maximum number of elements in stack");
+        else
+            set_atr1(idx, count_elements);
+    }
+}
+#line 1683 "micko.tab.c"
     break;
 
   case 32:
-#line 280 "micko.y"
-      {
-        print_symtab();
-        if(get_type((*(yyvsp[-2].vals)).first) != get_type((*(yyvsp[0].vals)).first))
-          err("invalid operands: arithmetic operation");
-        int t1 = get_type((yyvsp[-2].vals)->first);    
-        printf("\nPRVA: %d", (yyvsp[-2].vals)->second);
-        printf("\nDRUGA: %d", (yyvsp[0].vals)->second);
-        code("\n\t\t%s\t", ar_instructions[(yyvsp[-1].i) + (t1 - 1) * AROP_NUMBER]);
-        
-        if(get_kind((yyvsp[-2].vals)->first) == ARR){
-            gen_sym_name_arr_el((yyvsp[-2].vals)->first, (yyvsp[-2].vals)->second);
-        }else{
-            gen_sym_name((yyvsp[-2].vals)->first);   
-        }
-        code(",");
-        if(get_kind((yyvsp[0].vals)->first) == ARR){
-            gen_sym_name_arr_el((yyvsp[0].vals)->first, (yyvsp[0].vals)->second);
-        }else{
-            gen_sym_name((yyvsp[0].vals)->first);
-        }
-        code(",");
-        free_if_reg((yyvsp[0].vals)->first);
-        free_if_reg((yyvsp[-2].vals)->first);
-        struct num_exp_vals vrati; vrati.first = take_reg(); vrati.second=-1; (yyval.vals) = &vrati;
-        //$$ = take_reg();
-        gen_sym_name((yyval.vals)->first);
-        set_type((yyval.vals)->first, t1);
-      }
-#line 1669 "micko.tab.c"
+#line 309 "micko.y"
+{
+    print_symtab();
+    if (get_type((*(yyvsp[-2].vals)).first) != get_type((*(yyvsp[0].vals)).first))
+        err("invalid operands: arithmetic operation");
+    int t1 = get_type((yyvsp[-2].vals)->first);
+    printf("\nPRVA: %d", (yyvsp[-2].vals)->second);
+    printf("\nDRUGA: %d", (yyvsp[0].vals)->second);
+    code("\n\t\t%s\t", ar_instructions[(yyvsp[-1].i) + (t1 - 1) * AROP_NUMBER]);
+
+    gen_sym_name((yyvsp[-2].vals));
+    code(",");
+    gen_sym_name((yyvsp[0].vals));
+
+    code(",");
+    free_if_reg((yyvsp[0].vals)->first);
+    free_if_reg((yyvsp[-2].vals)->first);
+    struct num_exp_vals vrati;
+    vrati.first = take_reg();
+    vrati.second = -1;
+    (yyval.vals) = &vrati;
+    //$$ = take_reg();
+    gen_sym_name((yyval.vals));
+    set_type((yyval.vals)->first, t1);
+}
+#line 1712 "micko.tab.c"
     break;
 
   case 33:
-#line 311 "micko.y"
-            {struct num_exp_vals vrati; vrati.first = (yyvsp[0].i); vrati.second=-1; (yyval.vals) = &vrati;}
-#line 1675 "micko.tab.c"
+#line 336 "micko.y"
+{
+    struct num_exp_vals *lit = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    lit->first = (yyvsp[0].i);
+    lit->second = -1;
+    (yyval.vals) = lit;
+}
+#line 1723 "micko.tab.c"
     break;
 
   case 34:
-#line 314 "micko.y"
-      {
-        int head = lookup_symbol((yyvsp[-1].s), ARR);
-		if((yyvsp[0].i) >= get_atr2(head))
-			err("'%s' index out of range", (yyvsp[-1].s));
-		
-        if(head == NO_INDEX)
-          err("'%s' undeclared", (yyvsp[-1].s));
+#line 344 "micko.y"
+{
+    int head = lookup_symbol((yyvsp[-1].s), ARR | ARR_PAR);
+    if (get_kind(head) != ARR_PAR)
+    {
+        if ((yyvsp[0].i) >= get_atr2(head))
+            err("'%s' index out of range", (yyvsp[-1].s));
 
-        struct num_exp_vals vrati;
-        vrati.first = head; 
-        vrati.second= (yyvsp[0].i); 
-        (yyval.vals) = &vrati;
-      }
-#line 1693 "micko.tab.c"
+        if (head == NO_INDEX && get_kind(head) != ARR_PAR)
+            err("'%s' undeclared", (yyvsp[-1].s));
+
+        struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+        vrati->first = head;
+        vrati->second = (yyvsp[0].i);
+        (yyval.vals) = vrati;
+    }
+}
+#line 1744 "micko.tab.c"
     break;
 
   case 35:
-#line 328 "micko.y"
-      {
-        int idx = lookup_symbol((yyvsp[0].s), VAR|PAR);
-        if(idx == NO_INDEX)
-          err("'%s' undeclared", (yyvsp[0].s));
-        struct num_exp_vals vrati; vrati.first = idx; vrati.second=-1; (yyval.vals) = &vrati;
-      }
-#line 1704 "micko.tab.c"
+#line 361 "micko.y"
+{
+    int idx = lookup_symbol((yyvsp[0].s), VAR | PAR | ARR);
+    if (idx == NO_INDEX)
+        err("'%s' undeclared", (yyvsp[0].s));
+
+    struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    vrati->first = idx;
+    vrati->second = -1;
+    (yyval.vals) = vrati;
+}
+#line 1759 "micko.tab.c"
     break;
 
   case 36:
-#line 336 "micko.y"
-  {
-	    int idx = lookup_symbol((yyvsp[-4].s), STACK);
-        if(idx == NO_INDEX) 
-          err("'%s' undeclared", (yyvsp[-4].s));
-        struct num_exp_vals vrati; vrati.first = idx; vrati.second=-1; (yyval.vals) = &vrati;
-  }
-#line 1715 "micko.tab.c"
+#line 373 "micko.y"
+{
+    int idx = lookup_symbol((yyvsp[-4].s), STACK);
+    if (idx == NO_INDEX)
+        err("'%s' undeclared", (yyvsp[-4].s));
+
+    struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    vrati->first = idx;
+    vrati->second = -1;
+    (yyval.vals) = vrati;
+}
+#line 1774 "micko.tab.c"
     break;
 
   case 37:
-#line 343 "micko.y"
-      {
-        int idx = take_reg();
-        gen_mov(FUN_REG, idx);
-        struct num_exp_vals vrati; vrati.first = idx; vrati.second=-1; (yyval.vals) = &vrati;
-      }
-#line 1725 "micko.tab.c"
+#line 384 "micko.y"
+{
+    int idx = take_reg();
+	
+    struct num_exp_vals fun_reg;
+    fun_reg.first = FUN_REG;
+    fun_reg.second = -1;
+
+    struct num_exp_vals id;
+    id.first = idx;
+    id.second = -1;
+	
+    gen_mov(&fun_reg, &id);
+	
+    struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    vrati->first = idx;
+    vrati->second = -1;
+    (yyval.vals) = vrati;
+}
+#line 1797 "micko.tab.c"
     break;
 
   case 38:
-#line 350 "micko.y"
-      { struct num_exp_vals vrati; vrati.first = (yyvsp[-1].vals)->first; vrati.second=-1; (yyval.vals) = &vrati; }
-#line 1731 "micko.tab.c"
+#line 404 "micko.y"
+{
+    struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    vrati->first = (yyvsp[-1].vals)->first;
+    vrati->second = -1;
+    (yyval.vals) = vrati;
+}
+#line 1808 "micko.tab.c"
     break;
 
   case 39:
-#line 355 "micko.y"
-      { (yyval.i) = insert_literal((yyvsp[0].s), INT); }
-#line 1737 "micko.tab.c"
-    break;
-
-  case 40:
-#line 358 "micko.y"
-      { (yyval.i) = insert_literal((yyvsp[0].s), UINT); }
-#line 1743 "micko.tab.c"
-    break;
-
-  case 41:
-#line 363 "micko.y"
-      {
-        fcall_idx = lookup_symbol((yyvsp[0].s), FUN);
-        if(fcall_idx == NO_INDEX)
-          err("'%s' is not a function", (yyvsp[0].s));
-      }
-#line 1753 "micko.tab.c"
-    break;
-
-  case 42:
-#line 369 "micko.y"
-      {
-        if(get_atr1(fcall_idx) != (yyvsp[-1].i))
-          err("wrong number of arguments");
-        code("\n\t\t\tCALL\t%s", get_name(fcall_idx));
-        if((yyvsp[-1].i) > 0)
-          code("\n\t\t\tADDS\t%%15,$%d,%%15", (yyvsp[-1].i) * 4);
-        set_type(FUN_REG, get_type(fcall_idx));
-        (yyval.i) = FUN_REG;
-      }
-#line 1767 "micko.tab.c"
-    break;
-
-  case 43:
-#line 382 "micko.y"
-    { (yyval.i) = 0; }
-#line 1773 "micko.tab.c"
-    break;
-
-  case 44:
-#line 385 "micko.y"
-    { 
-      if(get_atr2(fcall_idx) != get_type((yyvsp[0].vals)->first))
-        err("incompatible type for argument");
-      free_if_reg((yyvsp[0].vals)->first);
-      code("\n\t\t\tPUSH\t");
-      gen_sym_name((yyvsp[0].vals)->first);
-      (yyval.i) = 1;
-    }
-#line 1786 "micko.tab.c"
-    break;
-
-  case 45:
-#line 397 "micko.y"
-      { code("\n@exit%d:", (yyvsp[0].i)); }
-#line 1792 "micko.tab.c"
-    break;
-
-  case 46:
-#line 400 "micko.y"
-      { code("\n@exit%d:", (yyvsp[-2].i)); }
-#line 1798 "micko.tab.c"
-    break;
-
-  case 47:
-#line 405 "micko.y"
-      {
-        (yyval.i) = ++lab_num;
-        code("\n@if%d:", lab_num);
-      }
-#line 1807 "micko.tab.c"
-    break;
-
-  case 48:
-#line 410 "micko.y"
-      {
-        code("\n\t\t%s\t@false%d", opp_jumps[(yyvsp[0].i)], (yyvsp[-1].i));
-        code("\n@true%d:", (yyvsp[-1].i));
-      }
+#line 413 "micko.y"
+{
+    (yyval.i) = insert_literal((yyvsp[0].s), INT);
+}
 #line 1816 "micko.tab.c"
     break;
 
-  case 49:
-#line 415 "micko.y"
-      {
-        code("\n\t\tJMP \t@exit%d", (yyvsp[-4].i));
-        code("\n@false%d:", (yyvsp[-4].i));
-        (yyval.i) = (yyvsp[-4].i);
-      }
-#line 1826 "micko.tab.c"
+  case 40:
+#line 418 "micko.y"
+{
+    (yyval.i) = insert_literal((yyvsp[0].s), UINT);
+}
+#line 1824 "micko.tab.c"
     break;
 
-  case 50:
+  case 41:
 #line 424 "micko.y"
-      {
-        if(get_type((yyvsp[-2].vals)->first) != get_type((yyvsp[0].vals)->first))
-          err("invalid operands: relational operator");
-        (yyval.i) = (yyvsp[-1].i) + ((get_type((yyvsp[-2].vals)->first) - 1) * RELOP_NUMBER);
-        gen_cmp((yyvsp[-2].vals)->first, (yyvsp[0].vals)->first);
-      }
-#line 1837 "micko.tab.c"
+{
+    fcall_idx = lookup_symbol((yyvsp[0].s), FUN);
+    if (fcall_idx == NO_INDEX)
+        err("'%s' is not a function", (yyvsp[0].s));
+}
+#line 1834 "micko.tab.c"
     break;
 
-  case 51:
-#line 434 "micko.y"
-      {
-        if(get_type(fun_idx) != get_type((yyvsp[-1].vals)->first))
-          err("incompatible types in return");
-        else
-            err("incompatible types in return");
+  case 42:
+#line 430 "micko.y"
+{
+    if (get_atr1(fcall_idx) != (yyvsp[-1].i))
+        err("wrong number of arguments");
+    code("\n\t\t\tCALL\t%s", get_name(fcall_idx));
+    if ((yyvsp[-1].i) > 0)
+        code("\n\t\t\tADDS\t%%15,$%d,%%15", (yyvsp[-1].i) * 4);
+    set_type(FUN_REG, get_type(fcall_idx));
+    (yyval.i) = FUN_REG;
+}
+#line 1848 "micko.tab.c"
+    break;
 
-        if(get_kind((yyvsp[-1].vals)->first) != ARR){
-             gen_mov((yyvsp[-1].vals)->first, FUN_REG);
-        }
-        else{
-            gen_mov_from_arr_el((yyvsp[-1].vals)->first, FUN_REG, (yyvsp[-1].vals)->second);        
-        }
-        code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));        
-      }
+  case 43:
+#line 442 "micko.y"
+{
+    (yyval.i) = 0;
+}
 #line 1856 "micko.tab.c"
     break;
 
+  case 44:
+#line 447 "micko.y"
+{
+    if (get_atr2(fcall_idx) != get_type((yyvsp[0].vals)->first))
+        err("incompatible type for argument");
+    free_if_reg((yyvsp[0].vals)->first);
+    code("\n\t\t\tPUSH\t");
+    gen_sym_name((yyvsp[0].vals));
+    (yyval.i) = 1;
+}
+#line 1869 "micko.tab.c"
+    break;
 
-#line 1860 "micko.tab.c"
+  case 45:
+#line 458 "micko.y"
+{
+    code("\n@exit%d:", (yyvsp[0].i));
+}
+#line 1877 "micko.tab.c"
+    break;
+
+  case 46:
+#line 463 "micko.y"
+{
+    code("\n@exit%d:", (yyvsp[-2].i));
+}
+#line 1885 "micko.tab.c"
+    break;
+
+  case 47:
+#line 469 "micko.y"
+{
+    (yyval.i) = ++lab_num;
+    code("\n@if%d:", lab_num);
+}
+#line 1894 "micko.tab.c"
+    break;
+
+  case 48:
+#line 474 "micko.y"
+{
+    code("\n\t\t%s\t@false%d", opp_jumps[(yyvsp[0].i)], (yyvsp[-1].i));
+    code("\n@true%d:", (yyvsp[-1].i));
+}
+#line 1903 "micko.tab.c"
+    break;
+
+  case 49:
+#line 479 "micko.y"
+{
+    code("\n\t\tJMP \t@exit%d", (yyvsp[-4].i));
+    code("\n@false%d:", (yyvsp[-4].i));
+    (yyval.i) = (yyvsp[-4].i);
+}
+#line 1913 "micko.tab.c"
+    break;
+
+  case 50:
+#line 487 "micko.y"
+{
+    if (get_type((yyvsp[-2].vals)->first) != get_type((yyvsp[0].vals)->first))
+        err("invalid operands: relational operator");
+    (yyval.i) = (yyvsp[-1].i) + ((get_type((yyvsp[-2].vals)->first) - 1) * RELOP_NUMBER);
+    gen_cmp((yyvsp[-2].vals), (yyvsp[0].vals));
+}
+#line 1924 "micko.tab.c"
+    break;
+
+  case 51:
+#line 496 "micko.y"
+{
+    print_symtab();
+    
+    if ((get_type(fun_idx) == INT_PTR && get_kind((yyvsp[-1].vals)->first) == ARR && get_type((yyvsp[-1].vals)->first) == INT) ||
+        (get_type(fun_idx) == UINT_PTR && get_kind((yyvsp[-1].vals)->first) == ARR && get_type((yyvsp[-1].vals)->first) == UINT))
+    {
+        printf("Povratna vrednost je referenca na niz.");
+    }
+    else if (get_type(fun_idx) != get_type((yyvsp[-1].vals)->first))
+    {
+        err("incompatible types in return");
+    }
+
+    if (get_kind((yyvsp[-1].vals)->first) != ARR)
+    {
+        struct num_exp_vals *fun_reg = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+        fun_reg->first = FUN_REG;
+        fun_reg->second = -1;
+        
+        gen_mov((yyvsp[-1].vals), fun_reg);
+    }
+    else
+    {
+		struct num_exp_vals *fun_reg = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+        fun_reg->first = FUN_REG;
+        fun_reg->second = -1;
+
+        gen_mov((yyvsp[-1].vals), fun_reg);
+    }
+    code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));
+}
+#line 1960 "micko.tab.c"
+    break;
+
+
+#line 1964 "micko.tab.c"
 
       default: break;
     }
@@ -2088,45 +2192,49 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 460 "micko.y"
+#line 539 "micko.y"
 
 
-int yyerror(char *s) {
-  fprintf(stderr, "\nline %d: ERROR: %s", yylineno, s);
-  error_count++;
-  return 0;
+    int yyerror(char *s)
+{
+    fprintf(stderr, "\nline %d: ERROR: %s", yylineno, s);
+    error_count++;
+    return 0;
 }
 
-void warning(char *s) {
-  fprintf(stderr, "\nline %d: WARNING: %s", yylineno, s);
-  warning_count++;
+void warning(char *s)
+{
+    fprintf(stderr, "\nline %d: WARNING: %s", yylineno, s);
+    warning_count++;
 }
 
-int main() {
-  int synerr;
-  init_symtab();
-  output = fopen("output.asm", "w+");
+int main()
+{
+    int synerr;
+    init_symtab();
+    output = fopen("output.asm", "w+");    
 
-  synerr = yyparse();
+    synerr = yyparse();
 
-  clear_symtab();
-  fclose(output);
-  
-  if(warning_count)
-    printf("\n%d warning(s).\n", warning_count);
+    clear_symtab();
+    fclose(output);
 
-  if(error_count) {
-    remove("output.asm");
-    printf("\n%d error(s).\n", error_count);
-  }
+    if (warning_count)
+        printf("\n%d warning(s).\n", warning_count);
 
-  if(synerr)
-    return -1;  //syntax error
-  else if(error_count)
-    return error_count & 127; //semantic errors
-  else if(warning_count)
-    return (warning_count & 127) + 127; //warnings
-  else
-    return 0; //OK
+    if (error_count)
+    {
+        remove("output.asm");
+        printf("\n%d error(s).\n", error_count);
+    }
+
+    if (synerr)
+        return -1; // syntax error
+    else if (error_count)
+        return error_count & 127; // semantic errors
+    else if (warning_count)
+        return (warning_count & 127) + 127; // warnings
+    else
+        return 0; // OK
 }
 

@@ -1,29 +1,15 @@
 //OPIS: switch sa break i default
 //RETURN: 10
 
-int* func(int* joc){
-    int a[5];
-    
-    return a;
-}
-
 int main() {
     int a;
-    int x;
-    int v;
     int b = {1, 2, 188};
-    int niz[10];
-    niz[1] = 1;
- 
+    int niz[3];
+    //x = 999;
+    a = 444;
+    niz[1] = a;
+    b[1] = niz[1];
+    //x = a;
 
-
-
-//    stack::int s[3];
-//    s.push(6);
-//    x = s.pop();
-    
-
-    
-    
     return b[1];
 }
