@@ -3,13 +3,14 @@
 
 int main() {
     int a;
-    int b = {1, 2, 188};
-    int niz[3];
-    //x = 999;
-    a = 444;
-    niz[1] = a;
-    b[1] = niz[1];
-    //x = a;
+    //int b = {1, 2, 188};
+    //int niz[3];
+    stack::int st[3];
+    a = 10;
+    st.push(11);
+    st.push(12);
+    a = st.pop();
+    
 
-    return b[1];
+    return a;
 }

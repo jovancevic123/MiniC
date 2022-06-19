@@ -25,6 +25,7 @@
     int array_literals_idx = 0;
 
     int multiplier = -1;
+    int stack_sizes[100];
     FILE *output;
 %}
 
@@ -196,8 +197,11 @@ variable
 }
 | _STACK _DOUBLE_COLON _TYPE _ID size _SEMICOLON
 {
-    if (lookup_symbol($4, VAR | PAR | ARR) == NO_INDEX)
-        insert_symbol($4, STACK, $3, 0, $5);
+    if (lookup_symbol($4, VAR | PAR | ARR) == NO_INDEX){
+        int idx = insert_symbol($4, STACK, $3, ++var_num, 0);
+        stack_sizes[idx] = $5;
+        code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * $5);
+    }
     else
         err("redefinition of '%s'", $4);
     print_symtab();
@@ -278,9 +282,7 @@ assignment_statement
 		struct num_exp_vals id;
 		id.first = idx;
 		id.second = $2;
-        printf("Ranije %d", $4->first);
         gen_mov($4, &id);
-        print_symtab();
     }
 }
 | _ID _DOT _PUSH _LPAREN num_exp _RPAREN _SEMICOLON
@@ -292,12 +294,17 @@ assignment_statement
         err("incompatible types in assignment");
     else
     {
-        int count_elements = get_atr1(idx);
+        int count_elements = get_atr2(idx);
         count_elements++;
-        if (count_elements >= get_atr2(idx))
+        if (count_elements >= stack_sizes[idx])
             err("exceeded maximum number of elements in stack");
-        else
-            set_atr1(idx, count_elements);
+        else{
+            set_atr2(idx, count_elements);
+            struct num_exp_vals id;
+		    id.first = idx;
+		    id.second = count_elements;
+            gen_mov($5, &id);
+        }
     }
 };
 
@@ -307,12 +314,9 @@ num_exp
       |
       num_exp _AROP exp
 {
-    print_symtab();
     if (get_type((*$1).first) != get_type((*$3).first))
         err("invalid operands: arithmetic operation");
     int t1 = get_type($1->first);
-    printf("\nPRVA: %d", $1->second);
-    printf("\nDRUGA: %d", $3->second);
     code("\n\t\t%s\t", ar_instructions[$2 + (t1 - 1) * AROP_NUMBER]);
 
     gen_sym_name($1);
@@ -376,9 +380,17 @@ exp
         err("'%s' undeclared", $1);
 
     struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
-    vrati->first = idx;
-    vrati->second = -1;
-    $$ = vrati;
+    int count_elements = get_atr2(idx);
+    if (count_elements <= 0)
+        err("nothing to pop from stack");
+    else{
+        vrati->first = idx;
+        vrati->second = count_elements;
+        $$ = vrati;
+        count_elements--;
+        set_atr2(idx, count_elements);
+    }   
+  
 }
 | function_call
 {
@@ -494,7 +506,6 @@ rel_exp
 return_statement
     : _RETURN num_exp _SEMICOLON
 {
-    print_symtab();
     
     if ((get_type(fun_idx) == INT_PTR && get_kind($2->first) == ARR && get_type($2->first) == INT) ||
         (get_type(fun_idx) == UINT_PTR && get_kind($2->first) == ARR && get_type($2->first) == UINT))

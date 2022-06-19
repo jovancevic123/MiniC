@@ -55,8 +55,8 @@ void gen_cmp(struct num_exp_vals *op1_index, struct num_exp_vals *op2_index)
 
 void gen_mov(struct num_exp_vals *input_index, struct num_exp_vals *output_index)
 {
-    printf("\nprvi: %d\n ", input_index->first);
-    printf("drugi: %d \n", output_index->first);
+    //printf("\nprvi: %d\n ", input_index->first);
+    //printf("drugi: %d \n", output_index->first);
     code("\n\t\tMOV \t");
     gen_sym_name(input_index);
     code(",");
@@ -73,7 +73,7 @@ void gen_sym_name(struct num_exp_vals *symbol)
 {
     if (symbol->first > -1)
     {
-        if (get_kind(symbol->first) == VAR) // -n*4(%14)
+        if (get_kind(symbol->first) == VAR || get_kind(symbol->first) == STACK) // -n*4(%14)
             code("-%d(%%14)", get_atr1(symbol->first) * 4);
         else if (get_kind(symbol->first) == ARR) // -n*4(%14)
             code("-%d(%%14)", get_atr1(symbol->first) * 4 + (symbol->second + 1) * 4);
