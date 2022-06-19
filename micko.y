@@ -295,10 +295,10 @@ assignment_statement
     else
     {
         int count_elements = get_atr2(idx);
-        count_elements++;
         if (count_elements >= stack_sizes[idx])
             err("exceeded maximum number of elements in stack");
         else{
+            count_elements++;
             set_atr2(idx, count_elements);
             struct num_exp_vals id;
 		    id.first = idx;

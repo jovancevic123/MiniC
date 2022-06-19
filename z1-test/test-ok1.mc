@@ -9,8 +9,9 @@ int main() {
     a = 10;
     st.push(11);
     st.push(12);
+    st.push(17);
     a = st.pop();
     
 
-    return a;
+    return st.pop();
 }
