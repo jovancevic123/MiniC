@@ -153,16 +153,17 @@ variable_list
 variable
     : _TYPE _ID _SEMICOLON
 {
-    if (lookup_symbol($2, VAR | PAR | ARR) == NO_INDEX)
+    if (lookup_symbol($2, VAR | PAR | ARR | ARR_PAR) == NO_INDEX)
         insert_symbol($2, VAR, $1, ++var_num, NO_ATR);
     else
         err("redefinition of '%s'", $2);
 }
 | _TYPE _ID size _SEMICOLON // Definition of an array
 {
-    if (lookup_symbol($2, VAR | PAR | ARR) == NO_INDEX)
+    if (lookup_symbol($2, VAR | PAR | ARR | ARR_PAR) == NO_INDEX)
     {
-        insert_symbol($2, ARR, $1, ++var_num, $3);
+        var_num = var_num + 1 + $3;
+        insert_symbol($2, ARR, $1, var_num, $3);
         code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * $3);
     }
 
@@ -171,9 +172,10 @@ variable
 }
 | _TYPE _ID _ASSIGN _LBRACKET literal_list _RBRACKET _SEMICOLON
 {
-    if (lookup_symbol($2, VAR | PAR | ARR) == NO_INDEX)
+    if (lookup_symbol($2, VAR | PAR | ARR | ARR_PAR) == NO_INDEX)
     {
-        int idx = insert_symbol($2, ARR, $1, ++var_num, literal_list_count);
+        var_num = var_num + 1 + literal_list_count;
+        int idx = insert_symbol($2, ARR, $1, var_num, literal_list_count);
         code("\n\t\t\tSUBS\t %%15,$%d,%%15", 4 * literal_list_count);
         for (int i = 0; i < literal_list_count; i++)
         {
@@ -197,8 +199,9 @@ variable
 }
 | _STACK _DOUBLE_COLON _TYPE _ID size _SEMICOLON
 {
-    if (lookup_symbol($4, VAR | PAR | ARR) == NO_INDEX){
-        int idx = insert_symbol($4, STACK, $3, ++var_num, 0);
+    if (lookup_symbol($4, VAR | PAR | ARR | ARR_PAR) == NO_INDEX){
+        var_num = var_num + 1 + $5;
+        int idx = insert_symbol($4, STACK, $3, var_num, 0);
         stack_sizes[idx] = $5;
         code("\n\t\tSUBS\t %%15,$%d,%%15", 4 * $5);
     }
@@ -309,10 +312,8 @@ assignment_statement
 };
 
 num_exp
-    : exp
-
-      |
-      num_exp _AROP exp
+ : exp
+ | num_exp _AROP exp
 {
     if (get_type((*$1).first) != get_type((*$3).first))
         err("invalid operands: arithmetic operation");
@@ -347,23 +348,21 @@ exp
 | _ID size
 {
     int head = lookup_symbol($1, ARR | ARR_PAR);
-    if (get_kind(head) != ARR_PAR)
+    if (head == NO_INDEX)
+        err("'%s' undeclared", $1);
+    if (get_kind(head) == ARR)
     {
         if ($2 >= get_atr2(head))
             err("'%s' index out of range", $1);
-
-        if (head == NO_INDEX && get_kind(head) != ARR_PAR)
-            err("'%s' undeclared", $1);
-
-        struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
-        vrati->first = head;
-        vrati->second = $2;
-        $$ = vrati;
     }
+    struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    vrati->first = head;
+    vrati->second = $2;
+    $$ = vrati;
 }
 | _ID
 {
-    int idx = lookup_symbol($1, VAR | PAR | ARR);
+    int idx = lookup_symbol($1, VAR | PAR | ARR | ARR_PAR);
     if (idx == NO_INDEX)
         err("'%s' undeclared", $1);
 
@@ -386,11 +385,11 @@ exp
     else{
         vrati->first = idx;
         vrati->second = count_elements;
+        printf("Count elements: %d", count_elements);
         $$ = vrati;
         count_elements--;
         set_atr2(idx, count_elements);
     }   
-  
 }
 | function_call
 {
@@ -506,9 +505,8 @@ rel_exp
 return_statement
     : _RETURN num_exp _SEMICOLON
 {
-    
-    if ((get_type(fun_idx) == INT_PTR && get_kind($2->first) == ARR && get_type($2->first) == INT) ||
-        (get_type(fun_idx) == UINT_PTR && get_kind($2->first) == ARR && get_type($2->first) == UINT))
+    if ((get_type(fun_idx) == INT_PTR && (get_kind($2->first) == ARR || get_kind($2->first) == ARR_PAR) && get_type($2->first) == INT && $2->second == -1) ||
+        (get_type(fun_idx) == UINT_PTR && (get_kind($2->first) == ARR || get_kind($2->first) == ARR_PAR) && get_type($2->first) == UINT && $2->second == -1))
     {
         printf("Povratna vrednost je referenca na niz.");
     }
@@ -535,16 +533,6 @@ return_statement
     }
     code("\n\t\tJMP \t@%s_exit", get_name(fun_idx));
 }
-//  | _RETURN _ID _SEMICOLON
-//    {
-//        if(get_kind($2) == ARR)
-//        {
-//             if(get_type(fun_idx) == INT_PTR && get_type($2) != INT)
-//                err("incompatible types in return");
-//             else if(get_type(fun_idx) == UINT_PTR && get_type($2) != UINT)
-//                err("incompatible types in return");
-//        }
-//    }
 ;
 
 %%

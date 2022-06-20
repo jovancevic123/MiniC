@@ -73,8 +73,10 @@ void gen_sym_name(struct num_exp_vals *symbol)
 {
     if (symbol->first > -1)
     {
-        if (get_kind(symbol->first) == VAR || get_kind(symbol->first) == STACK) // -n*4(%14)
+        if (get_kind(symbol->first) == VAR) // -n*4(%14)
             code("-%d(%%14)", get_atr1(symbol->first) * 4);
+        else if (get_kind(symbol->first) == STACK) 
+            code("-%d(%%14)", get_atr1(symbol->first) * 4 + (symbol->second + 1) * 4);
         else if (get_kind(symbol->first) == ARR) // -n*4(%14)
             code("-%d(%%14)", get_atr1(symbol->first) * 4 + (symbol->second + 1) * 4);
         else if (get_kind(symbol->first) == PAR) // m*4(%14)
