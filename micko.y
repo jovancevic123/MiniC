@@ -207,7 +207,6 @@ variable
     }
     else
         err("redefinition of '%s'", $4);
-    print_symtab();
 };
 
 literal_list
@@ -275,18 +274,22 @@ assignment_statement
 | _ID size _ASSIGN num_exp _SEMICOLON
 {
     int idx = lookup_symbol($1, ARR | ARR_PAR);
+    if (idx == NO_INDEX)
+        err("invalid lvalue '%s' in assignment", $1);
+    else
+        if (get_type(idx) != get_type($4->first))
+            err("incompatible types in assignment");
     if (get_kind(idx) != ARR_PAR)
     {
-        if (idx == NO_INDEX)
-            err("invalid lvalue '%s' in assignment", $1);
-        else if (get_type(idx) != get_type($4->first))
-            err("incompatible types in assignment");
+        if ($2 >= get_atr2(idx))
+            err("'%s' index out of range", $1);
 		
 		struct num_exp_vals id;
 		id.first = idx;
 		id.second = $2;
         gen_mov($4, &id);
     }
+    
 }
 | _ID _DOT _PUSH _LPAREN num_exp _RPAREN _SEMICOLON
 {
@@ -385,7 +388,7 @@ exp
     else{
         vrati->first = idx;
         vrati->second = count_elements;
-        printf("Count elements: %d", count_elements);
+        
         $$ = vrati;
         count_elements--;
         set_atr2(idx, count_elements);
