@@ -55,8 +55,6 @@ void gen_cmp(struct num_exp_vals *op1_index, struct num_exp_vals *op2_index)
 
 void gen_mov(struct num_exp_vals *input_index, struct num_exp_vals *output_index)
 {
-    //printf("\nprvi: %d\n ", input_index->first);
-    //printf("drugi: %d \n", output_index->first);
     code("\n\t\tMOV \t");
     gen_sym_name(input_index);
     code(",");

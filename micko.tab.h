@@ -69,11 +69,12 @@ extern int yydebug;
     _DOUBLE_COLON = 275,
     _STACK = 276,
     _POP = 277,
-    _PUSH = 278,
-    _AROP = 279,
-    _POINTER = 280,
-    _RELOP = 281,
-    ONLY_IF = 282
+    _TOP = 278,
+    _PUSH = 279,
+    _AROP = 280,
+    _POINTER = 281,
+    _RELOP = 282,
+    ONLY_IF = 283
   };
 #endif
 
@@ -87,7 +88,7 @@ union YYSTYPE
   char *s;
   struct num_exp_vals *vals;
 
-#line 91 "micko.tab.h"
+#line 92 "micko.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
