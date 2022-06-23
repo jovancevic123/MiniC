@@ -5,6 +5,8 @@ int main(){
 	
     stack::int stek[5];
     stek.push(10);
+    a = stek.top();
+    a = stek.top();
 	
-	return stek.pop();
+	return a;
 }

@@ -57,6 +57,7 @@
 %token _DOUBLE_COLON
 %token _STACK
 %token _POP
+%token _TOP
 %token _PUSH
 %token <i> _AROP
 %token _POINTER;
@@ -392,6 +393,23 @@ exp
         $$ = vrati;
         count_elements--;
         set_atr2(idx, count_elements);
+    }   
+}
+| _ID _DOT _TOP _LPAREN _RPAREN
+{
+    int idx = lookup_symbol($1, STACK);
+    if (idx == NO_INDEX)
+        err("'%s' undeclared", $1);
+
+    struct num_exp_vals *vrati = (struct num_exp_vals*) malloc(sizeof(struct num_exp_vals));
+    int count_elements = get_atr2(idx);
+    if (count_elements <= 0)
+        err("nothing on stack");
+    else{
+        vrati->first = idx;
+        vrati->second = count_elements;
+        
+        $$ = vrati;
     }   
 }
 | function_call

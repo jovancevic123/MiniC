@@ -30,6 +30,7 @@
 "["                  { return _LSQBRACKET; }
 "]"                  { return _RSQBRACKET; }
 "pop"				 { return _POP; }
+"top"				 { return _TOP; }
 "push"				 { return _PUSH; }
 "stack"				 { return _STACK; }
 "."					 { return _DOT; }
